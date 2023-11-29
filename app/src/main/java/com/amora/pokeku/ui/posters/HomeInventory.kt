@@ -39,7 +39,7 @@ fun HomeInventory(
 	Column(
 		modifier =
 		modifier
-			.fillMaxHeight()
+			.fillMaxSize()
 			.background(SnackbarDefaults.backgroundColor)
 	) {
 		LazyColumn(
