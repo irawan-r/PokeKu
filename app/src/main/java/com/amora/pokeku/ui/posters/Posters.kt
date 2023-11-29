@@ -33,11 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.amora.pokeku.R
 import com.amora.pokeku.constant.HomeTab
-import com.amora.pokeku.persistence.entity.PokemonEntity
 import com.amora.pokeku.ui.main.MainViewModel
 
 
@@ -47,7 +44,6 @@ fun Posters(
 	viewModel: MainViewModel,
 	selectedPoster: (Int?, String?) -> Unit
 ) {
-	val posters: LazyPagingItems<PokemonEntity> = viewModel.pokemonList.collectAsLazyPagingItems()
 	val selectedTab = HomeTab.getTabFromSource(viewModel.selectedTab.value)
 	val tabs = HomeTab.values()
 	val scrollState = rememberScrollState()
@@ -107,7 +103,7 @@ fun Posters(
 			val modifier = Modifier.padding(innerPadding)
 			Crossfade(targetState = selectedTab, label = "") { destination ->
 				when (destination) {
-					HomeTab.HOME -> HomePokemon(modifier, posters, selectedPoster, viewModel)
+					HomeTab.HOME -> HomePokemon(modifier, selectedPoster, viewModel)
 					HomeTab.INVENTORY -> HomeInventory(modifier, viewModel)
 				}
 			}

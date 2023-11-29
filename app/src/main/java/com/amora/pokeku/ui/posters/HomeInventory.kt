@@ -2,6 +2,7 @@ package com.amora.pokeku.ui.posters
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
@@ -15,11 +16,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.SnackbarDefaults
+import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
@@ -40,18 +43,32 @@ fun HomeInventory(
 		modifier =
 		modifier
 			.fillMaxSize()
-			.background(SnackbarDefaults.backgroundColor)
+			.background(backgroundColor)
 	) {
-		LazyColumn(
-			state = listState,
-			contentPadding = PaddingValues(4.dp)
-		) {
-			val size = pokemonInventory.size
-			items(size) { index ->
-				val posterItem = pokemonInventory[index]
-				PokemonInven(
-					poster = posterItem,
+		if (pokemonInventory.isEmpty()) {
+			Box(
+				modifier = modifier
+					.fillMaxSize()
+					.background(backgroundColor),
+				contentAlignment = Alignment.Center
+			) {
+				Text(
+					text = "It is empty here, go catch some pokemon!",
+					color = androidx.compose.material3.MaterialTheme.colorScheme.background
 				)
+			}
+		} else {
+			LazyColumn(
+				state = listState,
+				contentPadding = PaddingValues(4.dp)
+			) {
+				val size = pokemonInventory.size
+				items(size) { index ->
+					val posterItem = pokemonInventory[index]
+					PokemonInven(
+						poster = posterItem,
+					)
+				}
 			}
 		}
 	}
@@ -69,14 +86,16 @@ fun PokemonInven(
 			.clickable {
 
 			},
-		color = MaterialTheme.colors.background,
+		color = androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant,
 		elevation = 8.dp,
 		shape = RoundedCornerShape(8.dp)
 	) {
-		ConstraintLayout(modifier = Modifier
-			.padding(8.dp)
-			.fillMaxWidth()
-			.fillMaxHeight()) {
+		ConstraintLayout(
+			modifier = Modifier
+				.padding(8.dp)
+				.fillMaxWidth()
+				.fillMaxHeight()
+		) {
 			val (image, title) = createRefs()
 
 			NetworkImage(

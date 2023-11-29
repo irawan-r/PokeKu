@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.amora.pokeku.persistence.entity.PokemonEntity
 import com.amora.pokeku.persistence.entity.PokemonEntity.Companion.toPokemonPoster
 import com.amora.pokeku.repository.model.PokemonPoster
@@ -37,20 +38,21 @@ import com.amora.pokeku.ui.utils.NetworkImage
 @Composable
 fun HomePokemon(
 	modifier: Modifier = Modifier,
-	poster: LazyPagingItems<PokemonEntity>,
 	selectedPoster: (Int?, String?) -> Unit,
 	viewModel: MainViewModel
 ) {
 	val state by viewModel.isLoading
+	val poster: LazyPagingItems<PokemonEntity> = viewModel.pokemonList.collectAsLazyPagingItems()
 	val pullRefreshState =
 		rememberPullRefreshState(refreshing = state, onRefresh = { poster.refresh() })
 	Column(
 		modifier = Modifier
 			.fillMaxSize()
-			.background(MaterialTheme.colorScheme.background)
+			.background(backgroundColor)
 	) {
 		Box(
 			modifier = Modifier
+				.fillMaxSize()
 				.pullRefresh(pullRefreshState)
 		) {
 			when (poster.loadState.refresh) {
@@ -59,19 +61,19 @@ fun HomePokemon(
 					Box(
 						modifier = modifier
 							.fillMaxSize()
-							.background(Color.Gray.copy(alpha = 0.5f)),
+							.background(backgroundColor),
 						contentAlignment = Alignment.Center
 					) { }
 				}
-
 				is LoadState.Error -> {
 					Box(
 						modifier = modifier
 							.fillMaxSize()
-							.background(Color.Gray.copy(alpha = 0.5f)),
+							.background(backgroundColor),
 						contentAlignment = Alignment.Center
 					) {
-						Text(text = "Fail to Load")
+						Text(text = "Fail to Load", color = Color.White)
+
 					}
 				}
 
