@@ -92,6 +92,8 @@ private fun PokemonDetailsBody(
 	val pokemonState by viewModel.getPokemon.collectAsState(initial = null)
 	val snackbarHostState = remember { SnackbarHostState() }
 	var loadingState by remember { mutableStateOf(false) }
+	val randomColorBackground = remember { mutableStateOf(randomColor())  }
+	val randomColorSubTitle = remember { mutableStateOf(randomColor())  }
 	Scaffold(
 		modifier = Modifier.fillMaxSize(),
 		snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -109,8 +111,8 @@ private fun PokemonDetailsBody(
 					.background(
 						Brush.verticalGradient(
 							listOf(
-								randomColor(),
-								randomColor(),
+								randomColorBackground.value,
+								randomColorBackground.value,
 								MaterialTheme.colorScheme.background
 							)
 						),
@@ -193,7 +195,7 @@ private fun PokemonDetailsBody(
 						modifier = Modifier
 							.padding(horizontal = 8.dp)
 							.background(
-								randomColor(), shape = RoundedCornerShape(
+								randomColorSubTitle.value, shape = RoundedCornerShape(
 									topStart = 10.dp,
 									topEnd = 10.dp,
 									bottomEnd = 10.dp,
