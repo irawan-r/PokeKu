@@ -6,12 +6,13 @@ import com.amora.pokeku.repository.MainRepository
 import com.amora.pokeku.repository.model.PokeMark
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,8 +22,11 @@ class DetailsViewModel @Inject constructor(
 ) : ViewModel() {
 	private val pokeNameSharedFlow: MutableSharedFlow<PokeMark> = MutableSharedFlow(replay = 1)
 
-	private val catchPokemonStateFlow: Channel<Boolean> = Channel()
-	val getPokemon = catchPokemonStateFlow.receiveAsFlow()
+	private val catchPokemon: MutableStateFlow<Boolean?> = MutableStateFlow(null)
+	val getPokemon = catchPokemon.asStateFlow()
+
+	private val _isLoading = MutableStateFlow(false)
+	val isLoading = _isLoading.asStateFlow()
 
 	@OptIn(ExperimentalCoroutinesApi::class)
 	val posterDetailsFlow = pokeNameSharedFlow.flatMapLatest {
@@ -33,10 +37,15 @@ class DetailsViewModel @Inject constructor(
 
 	fun catchPokemon() {
 		viewModelScope.launch {
-			repository.catchPokemon().collectLatest { result ->
-				catchPokemonStateFlow.send(result)
+			repository.catchPokemon().collect { result ->
+				catchPokemon.update { result }
 			}
 		}
+	}
+
+	fun setLoading() {
+		_isLoading.value = _isLoading.value.not()
+		catchPokemon.value = null
 	}
 
 	fun insertPokemonName() {

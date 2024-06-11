@@ -38,7 +38,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -64,7 +63,10 @@ import com.amora.pokeku.persistence.entity.PokemonCompleteDetails
 import com.amora.pokeku.persistence.entity.PokemonCompleteDetails.Companion.getImageUrl
 import com.amora.pokeku.repository.model.PokeMark
 import com.amora.pokeku.ui.utils.NetworkImage
+import kotlinx.coroutines.delay
+import timber.log.Timber
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun PokemonDetails(
@@ -91,7 +93,8 @@ private fun PokemonDetailsBody(
 ) {
 	val pokemonState by viewModel.getPokemon.collectAsState(initial = null)
 	val snackbarHostState = remember { SnackbarHostState() }
-	var loadingState by remember { mutableStateOf(false) }
+	val loadingState by viewModel.isLoading.collectAsState()
+	val scrollState = rememberScrollState()
 	val randomColorBackground = remember { mutableStateOf(randomColor())  }
 	val randomColorSubTitle = remember { mutableStateOf(randomColor())  }
 	Scaffold(
@@ -101,7 +104,7 @@ private fun PokemonDetailsBody(
 		ConstraintLayout(
 			modifier = Modifier
 				.fillMaxSize()
-				.verticalScroll(rememberScrollState())
+				.verticalScroll(scrollState)
 				.background(backgroundColor)
 				.padding(paddingValues)
 		) {
@@ -448,12 +451,12 @@ private fun PokemonDetailsBody(
 			} else {
 				Image(
 					painter = painterResource(id = R.drawable.ic_pokeballs),
-					contentDescription = null, // Provide a content description if needed
+					contentDescription = null,
 					modifier = Modifier
 						.size(70.dp)
 						.clickable {
 							viewModel.catchPokemon()
-							loadingState = true
+							viewModel.setLoading()
 						}
 						.constrainAs(button) {
 							top.linkTo(content.bottom)
@@ -466,26 +469,34 @@ private fun PokemonDetailsBody(
 			}
 		}
 	}
-
 	LaunchedEffect(pokemonState) {
-		when {
-			pokemonState != null && pokemonState == true -> {
+		when (pokemonState)  {
+			true -> {
+				viewModel.insertPokemonName()
 				snackbarHostState.showSnackbar(
-					message = "Success, your pokemon has been catched",
+					message = "Success, your pokemon has been caught",
 					duration = SnackbarDuration.Short
 				)
-				viewModel.insertPokemonName()
-				loadingState = false
-				pressOnBack()
+				viewModel.setLoading()
 			}
-			pokemonState != null && pokemonState == false -> {
+			false -> {
 				snackbarHostState.showSnackbar(
 					message = "Failed, try again",
 					duration = SnackbarDuration.Short
 				)
-				pressOnBack()
-				loadingState = false
+				viewModel.setLoading()
 			}
+			else -> { }
+		}
+	}
+
+	LaunchedEffect(pokemonState, loadingState) {
+		when {
+			pokemonState == null && !loadingState -> {
+				delay(2000)
+				scrollState.animateScrollTo(scrollState.maxValue)
+			}
+			else -> { }
 		}
 	}
 }
